@@ -1,10 +1,9 @@
 [package]
-name = "crypto"
+name = "auth_identity"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aes = "0.8"
-block-modes = "0.9"
+cortex-m = "0.7"
 p256 = "0.10"
 rand = "0.8"

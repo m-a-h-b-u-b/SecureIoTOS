@@ -1,0 +1,10 @@
+[package]
+name = "secure_storage"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cortex-m = "0.7"
+crypto = { path = "../crypto" }   # assumes your crypto crate exists in workspace
+# Note: Vec usage above requires std in some environments; on `no_std` targets,
+# provide an allocator or replace Vec with fixed-size buffers.

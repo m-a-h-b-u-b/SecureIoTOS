@@ -1,5 +1,14 @@
-//! SecureIoTOS Kernel Module
+//! SecureIoTOS Cryptography Module
 //! License: Apache 2.0
 //! Author: Md Mahbubur Rahman
 //! URL: https://m-a-h-b-u-b.github.io
 //! GitHub: https://github.com/m-a-h-b-u-b/SecureIoTOS
+
+pub mod aes;
+pub mod ecc;
+pub mod rng;
+
+/// Initialize cryptography modules
+pub fn init_crypto() {
+    rng::init_rng();
+}
