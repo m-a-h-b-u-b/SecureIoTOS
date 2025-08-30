@@ -1,0 +1,11 @@
+[package]
+name = "secure_communication"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-rustls = "0.23"
+rumqttc = "0.17"
+coap-lite = "0.6"
+hex = "0.4"
