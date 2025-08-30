@@ -4,7 +4,6 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-nightly-orange.svg)](https://www.rust-lang.org/)
-[![Build](https://github.com/<user>/SecureIoTOS/actions/workflows/build.yml/badge.svg)](https://github.com/<user>/SecureIoTOS/actions)
 
 ---
 
