@@ -5,11 +5,11 @@
 //! GitHub: https://github.com/m-a-h-b-u-b/SecureIoTOS
 
 pub mod scheduler;
-pub mod context;
-pub mod syscall;
-pub mod init;
+pub mod ipc;
+pub mod tasks;
 
-pub fn kernel_start() {
-    init::kernel_init();
-    scheduler::schedule();
+/// Initialize scheduler and IPC
+pub fn init_system() {
+    ipc::init_queue();
+    tasks::init_tasks();
 }
