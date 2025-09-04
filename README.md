@@ -20,7 +20,7 @@ The repository provides fully modular source code and examples to **build, run, 
 
 ---
 
-## Why OS Built on Rust Instead of C/C++
+## Why SecureIoTOS written in Rust Instead of C/C++
 [![Rust](https://img.shields.io/badge/Rust-language-blue.svg)](https://www.rust-lang.org/)
 
 SecureIoTOS is written in Rust to leverage **modern safety, security, and productivity benefits** that are harder to achieve in C/C++. Here are the main reasons:
