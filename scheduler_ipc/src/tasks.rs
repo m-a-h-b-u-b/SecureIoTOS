@@ -4,6 +4,9 @@
 //! URL: https://m-a-h-b-u-b.github.io
 //! GitHub: https://github.com/m-a-h-b-u-b/SecureIoTOS
 
+use cortex_m::register::psp;
+
+
 /// Representation of a task in the system.
 ///
 /// Fields:
@@ -40,11 +43,27 @@ pub fn context_switch(current: &Task, next: &Task) {
     restore_cpu_state(next);
 }
 
-/// Save the CPU state of a task.
+/// Save the CPU state of a task by updating its saved stack pointer.
 ///
-/// In a complete implementation, this would push registers and status
-/// information onto the task’s stack so execution can be resumed later.
-fn save_cpu_state(_task: &Task) {}
+/// In a real scheduler, this function would:
+/// - Push registers onto the task's stack.
+/// - Save the Process Stack Pointer (PSP) value.
+/// 
+/// Here, we simulate this by reading PSP and storing it in the Task struct.
+fn save_cpu_state(task: &mut Task) {
+    unsafe {
+        // Read Process Stack Pointer (PSP)
+        let current_sp = psp::read();
+        task.stack_pointer = current_sp as *mut u32;
+
+		// push registers onto the stack (R4–R11 at minimum for cooperative multitasking)
+        asm!(
+             "mrs {0}, psp", out(reg) current_sp,
+             "stmdb {0}!, {{r4-r11}}", // push callee-saved regs
+             inout(reg) current_sp => _,
+         );
+    }
+}
 
 /// Restore the CPU state of a task.
 ///
