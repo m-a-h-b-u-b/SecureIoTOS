@@ -6,7 +6,7 @@
 [![Rust](https://img.shields.io/badge/rust-nightly-orange.svg)](https://www.rust-lang.org/)
 [![eBook](https://img.shields.io/badge/docs-eBook-brightgreen.svg)](https://www.amazon.com/dp/B0FPQDSHGQ)
 
-📘 [Read the SecureIoTOS eBook](https://www.amazon.com/dp/B0FPQDSHGQ)  
+📘 [Read the SecureIoTOS Book](https://www.amazon.com/dp/B0FPQDSHGQ)  
 
 To help you understand how the code works, I have written a detailed book that explains the **design, modules, and flow of SecureIoTOS**.
 ---
@@ -19,6 +19,26 @@ It demonstrates **secure boot, memory protection, process isolation, safe driver
 The repository provides fully modular source code and examples to **build, run, and test the OS** on both QEMU and real IoT boards like STM32, ESP32, and NRF52.
 
 ---
+
+## Why OS Built on Rust Instead of C/C++
+
+[![Rust vs C/C++](https://img.shields.io/badge/Rust-vs-C++-orange.svg)](https://www.rust-lang.org/)
+
+SecureIoTOS is written in Rust to leverage **modern safety, security, and productivity benefits** that are harder to achieve in C/C++. Here are the main reasons:
+
+1. **Memory Safety Without a Garbage Collector** – Rust prevents dangling pointers, buffer overflows, and use-after-free errors via ownership and borrowing.  
+2. **Fearless Concurrency** – Rust’s type system ensures no data races at compile time.  
+3. **No Undefined Behavior by Default** – Rust makes potential memory and logic errors explicit.  
+4. **Zero-Cost Abstractions** – High-level code runs as efficiently as C/C++.  
+5. **Safer Embedded Development** – Memory safety reduces firmware crashes and vulnerabilities.  
+6. **Better Package & Dependency Management** – Cargo simplifies building, testing, and dependency handling.  
+7. **Modern Language Features** – Pattern matching, enums, traits, async/await, macros, and more reduce boilerplate.  
+8. **Security by Design** – Rust reduces common IoT vulnerabilities originating from memory corruption in C/C++.  
+9. **Growing Embedded Ecosystem** – `embedded-hal`, RTIC, and HAL crates make Rust practical for IoT development.  
+10. **Developer Productivity & Maintainability** – Strong compiler guarantees reduce debugging and long-term maintenance costs.  
+
+In short, **Rust combines the performance of C with the safety of modern languages**, making it ideal for security-critical IoT operating systems like SecureIoTOS.
+
 
 ## Features
 
