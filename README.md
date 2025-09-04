@@ -4,7 +4,11 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-nightly-orange.svg)](https://www.rust-lang.org/)
+[![eBook](https://img.shields.io/badge/docs-eBook-brightgreen.svg)](https://www.amazon.com/dp/B0FPQDSHGQ)
 
+📘 [Read the SecureIoTOS eBook](https://www.amazon.com/dp/B0FPQDSHGQ)  
+
+To help you understand how the code works, I have written a detailed book that explains the **design, modules, and flow of SecureIoTOS**.
 ---
 
 ## Overview
