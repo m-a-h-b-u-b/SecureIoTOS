@@ -2,17 +2,18 @@
 //! -----------------------
 //! License : Dual License
 //!           - Apache 2.0 for open-source / personal use
-//!           - Commercial license required for closed-source use
-//! Author: Md Mahbubur Rahman
-//! URL: https://m-a-h-b-u-b.github.io
-//! GitHub: https://github.com/m-a-h-b-u-b/SecureIoTOS
+//!           - Commercial license required for closed-source / commercial use
+//! Author  : Md Mahbubur Rahman
+//! URL     : <https://m-a-h-b-u-b.github.io>
+//! GitHub  : <https://github.com/m-a-h-b-u-b/SecureIoTOS>
 //!
 //! Provides both a minimal async CoAP client and server for IoT devices.
 //! Built on UDP + `coap-lite`.
 
-use coap_lite::{Packet, RequestType as Method, ResponseType};
-use tokio::net::UdpSocket;
 use anyhow::{Context, Result};
+use coap_lite::{Packet, RequestType as Method, ResponseType};
+use log::{info, warn, debug};
+use tokio::net::UdpSocket;
 
 /// ------------------ CLIENT ------------------
 
@@ -34,15 +35,20 @@ pub async fn coap_request(
         request.payload = data.to_vec();
     }
 
-    let req_bytes = request.to_bytes()
+    let req_bytes = request
+        .to_bytes()
         .context("Failed to serialize CoAP request")?;
 
-    socket.send_to(&req_bytes, addr)
+    debug!("Sending {:?} request to {}{}", method, addr, path);
+
+    socket
+        .send_to(&req_bytes, addr)
         .await
         .with_context(|| format!("Failed to send CoAP request to {}", addr))?;
 
-    let mut buf = [0u8; 1500]; // UDP MTU
-    let (size, _) = socket.recv_from(&mut buf)
+    let mut buf = [0u8; 1500]; // typical UDP MTU
+    let (size, _) = socket
+        .recv_from(&mut buf)
         .await
         .context("Failed to receive CoAP response")?;
 
@@ -52,18 +58,22 @@ pub async fn coap_request(
     Ok(response)
 }
 
+/// Shorthand: CoAP GET request.
 pub async fn coap_get(addr: &str, path: &str) -> Result<Packet> {
     coap_request(addr, Method::Get, path, None).await
 }
 
+/// Shorthand: CoAP POST request.
 pub async fn coap_post(addr: &str, path: &str, payload: &[u8]) -> Result<Packet> {
     coap_request(addr, Method::Post, path, Some(payload)).await
 }
 
+/// Shorthand: CoAP PUT request.
 pub async fn coap_put(addr: &str, path: &str, payload: &[u8]) -> Result<Packet> {
     coap_request(addr, Method::Put, path, Some(payload)).await
 }
 
+/// Shorthand: CoAP DELETE request.
 pub async fn coap_delete(addr: &str, path: &str) -> Result<Packet> {
     coap_request(addr, Method::Delete, path, None).await
 }
@@ -71,38 +81,42 @@ pub async fn coap_delete(addr: &str, path: &str) -> Result<Packet> {
 /// ------------------ SERVER ------------------
 
 /// Minimal async CoAP server.
-/// 
-/// # Arguments
-/// * `bind_addr` – UDP socket to bind (e.g., "0.0.0.0:5683")
 ///
-/// The server listens forever and responds with simple demo payloads.
+/// # Arguments
+/// * `bind_addr` – UDP socket to bind (e.g., `"0.0.0.0:5683"`)
+///
+/// The server listens forever and responds with simple demo payloads:
+/// - GET `/sensor/temp` → `"23.5°C"`
+/// - POST `/sensor/data` → echoes payload
+/// - PUT `/resource` → echoes payload
+/// - DELETE `/resource` → responds with Deleted
 pub async fn coap_server(bind_addr: &str) -> Result<()> {
     let socket = UdpSocket::bind(bind_addr)
         .await
         .with_context(|| format!("Failed to bind CoAP server on {}", bind_addr))?;
 
-    println!("CoAP server listening on {}", bind_addr);
+    info!("CoAP server listening on {}", bind_addr);
 
     let mut buf = [0u8; 1500];
 
     loop {
-        let (size, peer) = socket.recv_from(&mut buf)
+        let (size, peer) = socket
+            .recv_from(&mut buf)
             .await
             .context("Failed to receive CoAP request")?;
 
         if let Ok(request) = Packet::from_bytes(&buf[..size]) {
+            debug!("Received request from {}: {:?}", peer, request);
+
             let mut response = Packet::new();
             response.header.message_id = request.header.message_id;
             response.set_token(request.get_token().clone());
 
             match request.get_method() {
-                Some(Method::Get) => {
-                    if request.get_path() == "/sensor/temp" {
-                        response.header.code = ResponseType::Content.into();
-                        response.payload = b"23.5°C".to_vec();
-                    } else {
-                        response.header.code = ResponseType::NotFound.into();
-                    }
+                Some(Method::Get) if request.get_path() == ("/sensor/temp") => {
+                    
+					response.header.code = ResponseType::Content.into();
+                    response.payload = b"23.5°C".to_vec();
                 }
                 Some(Method::Post) => {
                     response.header.code = ResponseType::Created.into();
@@ -115,13 +129,20 @@ pub async fn coap_server(bind_addr: &str) -> Result<()> {
                 Some(Method::Delete) => {
                     response.header.code = ResponseType::Deleted.into();
                 }
-                _ => {
+                Some(_) => {
+                    response.header.code = ResponseType::NotFound.into();
+                }
+                None => {
+                    warn!("Request had no method, ignoring.");
                     response.header.code = ResponseType::MethodNotAllowed.into();
                 }
             }
 
             if let Ok(res_bytes) = response.to_bytes() {
-                socket.send_to(&res_bytes, peer).await?;
+                socket
+                    .send_to(&res_bytes, peer)
+                    .await
+                    .with_context(|| format!("Failed to send response to {}", peer))?;
             }
         }
     }
@@ -149,7 +170,9 @@ mod tests {
         assert_eq!(String::from_utf8_lossy(&res.payload), "23.5°C");
 
         // Test POST
-        let res = coap_post("127.0.0.1:5683", "/sensor/data", b"42").await.unwrap();
+        let res = coap_post("127.0.0.1:5683", "/sensor/data", b"42")
+            .await
+            .unwrap();
         assert_eq!(res.payload, b"42");
     }
 }
