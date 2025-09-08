@@ -8,7 +8,6 @@ pub mod hello;
 pub mod sensor;
 pub mod telemetry;
 
-/// Run demo for Chapter 17 IoT Applications
 pub async fn run_demo() {
 
     hello::hello_world();
