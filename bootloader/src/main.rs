@@ -1,53 +1,79 @@
-//! SecureIoTOS Bootloader Module
+//! SecureIoTOS Bootloader Main Module
+//! -----------------------------------
 //! License : Dual License
 //!           - Apache 2.0 for open-source / personal use
 //!           - Commercial license required for closed-source use
-//! Author: Md Mahbubur Rahman
-//! URL: https://m-a-h-b-u-b.github.io
-//! GitHub: https://github.com/m-a-h-b-u-b/SecureIoTOS
+//! Author  : Md Mahbubur Rahman
+//! URL     : <https://m-a-h-b-u-b.github.io>
+//! GitHub  : <https://github.com/m-a-h-b-u-b/SecureIoTOS>
+//!
+//! Provides the main bootloader entry point for SecureIoTOS.
+//! Responsibilities:
+//! 1. Initialize NVIC and SysTick timers.
+//! 2. Verify firmware integrity.
+//! 3. Switch CPU mode and jump to firmware if valid.
+//! 4. Fail-safe loop on verification failure.
 
-#![no_std]   // Do not link the Rust standard library (required for embedded systems)
-#![no_main]  // Disable the standard `main` entry point
+#![no_std]
+#![no_main]
 
-use cortex_m_rt::entry; // Attribute macro for defining the Cortex-M entry point
+use cortex_m_rt::entry;
 use cortex_m::asm;
 
 const FIRMWARE_START: u32 = 0x0800_4000;
 const FIRMWARE_SIZE: usize = 64 * 1024;
+const EXPECTED_HASH: [u8; 32] = [0; 32]; // Replace with real firmware hash
 
-/// Program entry point (executed at reset).
-/// This function:
-/// 1. Initializes NVIC and SysTick.
-/// 2. Verifies firmware integrity.
-/// 3. Transfers control to the firmware if verification passes.
+/// Program entry point executed at reset
 #[entry]
 fn main() -> ! {
-    init_nvic();    // Configure Nested Vectored Interrupt Controller
-    init_systick(); // Configure system tick timer
+    init_nvic();
+    init_systick();
 
-    // Load firmware directly from flash (starting at 0x08004000).
-    // Assumes firmware size is 64 KB.
-    let fw_valid = verify_firmware(unsafe {
-        core::slice::from_raw_parts(FIRMWARE_START as *const u8, FIRMWARE_SIZE)
-    }, EXPECTED_HASH);
-	
-	fn fail_safe() -> ! {
-    // TODO: Blink error LED or reset via watchdog
-    loop { cortex_m::asm::wfi(); } // low-power wait
-}
+    // Load firmware slice from flash
+    let firmware = unsafe { core::slice::from_raw_parts(FIRMWARE_START as *const u8, FIRMWARE_SIZE) };
 
-    // If verification fails, enter an infinite loop as a fail-safe.
-    if !fw_valid { loop { fail_safe (); } }
+    // Verify firmware integrity
+    if !verify_firmware(firmware, &EXPECTED_HASH) {
+        fail_safe();
+    }
 
-    // Switch to unprivileged mode by writing to the CONTROL register.
-	// requires unsafe is because writing to CPU control registers 
-	// is inherently unsafe in Rust’s memory and execution model.
+    // Switch to unprivileged mode
     unsafe { cortex_m::register::CONTROL.write(1); }
 
-    // Jump to the firmware entry point.
-    // The address 0x08004000 is interpreted as a function pointer.
-    let kernel: extern "C" fn() -> ! =
+    // Jump to firmware entry point
+    let firmware_entry: extern "C" fn() -> ! =
         unsafe { core::mem::transmute(FIRMWARE_START as *const u32) };
 
-    kernel(); // Transfer execution to firmware (never returns)
+    firmware_entry(); // Never returns
+}
+
+/// Fail-safe loop in case of firmware verification failure
+#[inline(never)]
+fn fail_safe() -> ! {
+    // TODO: Blink error LED or trigger watchdog reset
+    loop {
+        asm::wfi(); // Wait for interrupt (low-power)
+    }
+}
+
+/// Initialize NVIC (Nested Vectored Interrupt Controller)
+fn init_nvic() {
+    // TODO: Add NVIC setup (priority, enable interrupts, etc.)
+}
+
+/// Initialize SysTick timer
+fn init_systick() {
+    // TODO: Configure system tick for timing / RTOS tick
+}
+
+/// Verify firmware integrity using a hash
+///
+/// # Arguments
+/// * `firmware` - firmware byte slice
+/// * `expected_hash` - expected hash for verification
+fn verify_firmware(firmware: &[u8], expected_hash: &[u8]) -> bool {
+    // TODO: Implement actual hash check (e.g., SHA-256)
+    // Placeholder returns true for now
+    true
 }
