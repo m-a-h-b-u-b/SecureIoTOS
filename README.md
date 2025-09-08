@@ -2,7 +2,6 @@
 
 **A Rust-based Secure Tiny OS for ARM Cortex-M IoT Devices**
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-nightly-orange.svg)](https://www.rust-lang.org/)
 [![eBook](https://img.shields.io/badge/docs-eBook-brightgreen.svg)](https://www.amazon.com/dp/B0FPQDSHGQ)
 
@@ -171,7 +170,9 @@ Use the scripts in `/tools` to flash binaries to your board:
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE)
+License : Dual License
+    - Open-source: Free for personal or open-source projects
+    - Commercial: Proprietary license required for closed-source / commercial use
 
 ---
 
