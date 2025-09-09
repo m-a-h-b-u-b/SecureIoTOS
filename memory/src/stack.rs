@@ -1,5 +1,5 @@
-//! SecureIoTOS Kernel Module
-//! ----------------------------------------------------
+//! SecureIoTOS stack Module
+//! ------------------------
 //! License : Dual License
 //!           - Apache 2.0 for open-source / personal use
 //!           - Commercial license required for closed-source use
@@ -9,6 +9,8 @@
 //!
 //! Task stack utilities: static stacks, fast fill, watermarking, and canary.
 
+// If we are not running tests, compile this crate without the standard library (no_std).
+// If we are running tests, include std so tests can use standard library features.
 #![cfg_attr(not(test), no_std)]
 
 /// Task stacks (1 KiB each). Access requires `unsafe`.
