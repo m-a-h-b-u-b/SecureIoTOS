@@ -37,7 +37,25 @@ pub fn init_peripherals() {
     secure_bus::init_bus_security();
 }
 
-/// Optional: Allow selective initialization for testing or specialized scenarios
+/// Initialize a **subset** of peripheral security modules.
+///
+/// # Description
+/// Allows selective initialization of specific security components. Useful for:
+/// - Unit testing (mocking or partial initialization)
+/// - Debugging isolated subsystems
+/// - Specialized deployments with limited resources
+///
+/// # Parameters
+/// - `sensor`: Initialize sensor-level security if `true`
+/// - `bus`: Initialize secure bus communication if `true`
+///
+/// # Example
+/// ```ignore
+/// use SecureIoTOS::peripheral_security;
+///
+/// // Initialize only the secure bus, skip sensor security
+/// peripheral_security::init_peripherals_selective(false, true);
+/// ```
 pub fn init_peripherals_selective(sensor: bool, bus: bool) {
     if sensor {
         secure_sensor::init_sensor();
