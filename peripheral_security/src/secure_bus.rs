@@ -1,9 +1,17 @@
-//! SecureIoTOS Peripheral Security – Secure Bus Module (AEAD Implementation)
-//! -----------------------------------------------------------------------
+//! SecureIoTOS Peripheral Security Secure Bus Module
+//! -------------------------------------------------
+//! License : Dual License
+//!           - Apache 2.0 for open-source / personal use
+//!           - Commercial license required for closed-source use
+//! Author  : Md Mahbubur Rahman
+//! URL     : <https://m-a-h-b-u-b.github.io>
+//! GitHub  : <https://github.com/m-a-h-b-u-b/SecureIoTOS>
 //!
 //! Production-ready (opinionated) implementation for authenticated encryption
 //! over SPI and I2C buses using AEAD (ChaCha20-Poly1305).
-//!
+
+
+
 //! **Security summary**
 //! - Uses XChaCha20-Poly1305 / ChaCha20-Poly1305 AEAD for confidentiality
 //!   and integrity. Prefer XChaCha20-Poly1305 for larger nonces when available.
