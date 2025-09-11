@@ -4,5 +4,34 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Core embedded support
 cortex-m = "0.7"
 hal = { path = "../hal" }
+
+# --- Cryptography ---
+# AEAD: ChaCha20-Poly1305
+chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
+
+# --- Randomness ---
+# Use rand for std builds (testing)
+rand = { version = "0.8", default-features = false, optional = true, features = ["std"] }
+# For embedded, we’ll rely on getrandom or a TRNG via HAL
+getrandom = { version = "0.2", default-features = false, features = ["rdrand"], optional = true }
+
+# --- Security utilities ---
+zeroize = { version = "1.5", default-features = false, features = ["alloc"] }
+thiserror = "1.0"
+
+# --- Conditional runtime helpers ---
+lazy_static = { version = "1.4", optional = true }
+
+[features]
+# Default = host testing
+default = ["std"]
+
+# Feature flags
+std = ["rand", "lazy_static", "chacha20poly1305/std", "zeroize/std"]
+embedded = ["getrandom"]  # expects hal or hardware RNG
+
+[dev-dependencies]
+# Testing mocks can live here
