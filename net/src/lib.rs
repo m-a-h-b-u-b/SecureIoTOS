@@ -7,12 +7,17 @@
 //! GitHub: https://github.com/m-a-h-b-u-b/SecureIoTOS
 //! Minimal, portable networking primitives and traits for SecureIoTOS.
 
+/// #![no_std]: allows the code to run in embedded environments without the standard library.
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(all(not(feature = "std"), feature = "alloc"))]
+
+/// extern crate alloc: enables heap allocations when alloc is available.
 extern crate alloc;
 
 #[cfg(feature = "std")]
+
+/// use std as core_std: makes std available for debug/test features
 use std as core_std;
 
 use core::fmt;
@@ -38,27 +43,57 @@ use alloc::vec::Vec;
 
 /// IP address type (IPv4 only for now)
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+
+/// Ipv4Addr represents an IPv4 address, e.g., 192.168.1.1.
+/// Internally, it stores the address as 4 bytes (u8), one per octet.
+/// Using [u8; 4] is efficient: compact memory representation and easy to manipulate.
 pub struct Ipv4Addr {
     pub octets: [u8; 4],
 }
 
 impl Ipv4Addr {
+	// const fn: can be called at compile-time as well as runtime.
+	// Example: const LOCAL: Ipv4Addr = Ipv4Addr::new(192, 168, 0, 1);
+	// Parameters a, b, c, d correspond to the 4 octets of an IPv4 address		.
+	// Self { octets: [a, b, c, d] } is shorthand for Ipv4Addr { octets: [a, b, c, d] }.
+
     pub const fn new(a: u8, b: u8, c: u8, d: u8) -> Self {
         Self { octets: [a, b, c, d] }
     }
+	
+	// const fn -> (1) Allows compile-time computation.
+	// (2) Useful for embedded or OS development where runtime allocations are restricted.
 
     pub const fn localhost() -> Self {
         Self::new(127, 0, 0, 1)
     }
 
+	// Returns the IPv4 address as a 4-byte array in big-endian order (network byte order).
+	// self is copied because Ipv4Addr is Copy (small, 4 bytes).
+	// Big-endian is standard for networking, e.g., when sending IPs over the wire.
+	// In this implementation, no transformation is needed because the octets are already in big-endian.
     pub fn to_be_bytes(self) -> [u8; 4] {
         self.octets
     }
 }
-
+// Declares that we are implementing the Debug trait for our Ipv4Addr type.
+// This allows instances of Ipv4Addr to be printed in a human-readable debug format:
 impl fmt::Debug for Ipv4Addr {
+	// This is the required function for Debug.
+	// Parameters:
+	//	&self: reference to the Ipv4Addr instance being printed.
+	//	f: &mut fmt::Formatter<'_>: a formatter object that manages output formatting.
+	//		Provides methods like write! to write formatted strings.
+	//Return type: fmt::Result
+	//	Rust requires that formatting functions return a Result indicating success or failure of formatting.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let o = &self.octets;
+		
+		// Core of the formatting:
+		// write! is similar to println!, but writes into the formatter f instead of stdout.
+		// "{}.{}.{}.{}" is the format string; it will produce standard IPv4 dotted notation.
+		// o[0]..o[3] are the four octets of the IPv4 address.
+		
         write!(f, "{}.{}.{}.{}", o[0], o[1], o[2], o[3])
     }
 }
@@ -96,6 +131,7 @@ impl fmt::Display for NetError {
 impl std::error::Error for NetError {}
 
 /// Result alias used throughout the network module.
+/// NetResult<T> = Result<T, NetError> is a convenient alias.
 pub type NetResult<T> = Result<T, NetError>;
 
 /// A low-level network device abstraction. Implement this trait for your
