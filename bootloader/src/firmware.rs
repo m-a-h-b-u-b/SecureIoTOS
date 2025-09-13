@@ -1,4 +1,4 @@
-//! SecureIoTOS Bootloader Module
+//! SecureIoTOS Bootloader firmware Module
 //! License : Dual License
 //!           - Apache 2.0 for open-source / personal use
 //!           - Commercial license required for closed-source use
@@ -13,6 +13,8 @@ use sha2::{Sha256, Digest};
 // from the P-256 curve implementation
 use p256::ecdsa::{Signature, VerifyingKey, signature::Verifier};
 
+use subtle::ConstantTimeEq;
+
 /// Verify the integrity of the firmware by comparing its SHA-256 hash
 /// with the expected hash provided by a trusted source (e.g., secure server).
 ///
@@ -24,13 +26,22 @@ use p256::ecdsa::{Signature, VerifyingKey, signature::Verifier};
 /// * `true` if firmware hash matches `expected_hash`
 /// * `false` if mismatch (corrupted or tampered firmware)
 pub fn verify_firmware(firmware: &[u8], expected_hash: &[u8]) -> bool {
-    let mut hasher = Sha256::new();     // Create a new SHA-256 context
-    hasher.update(firmware);            // Feed firmware bytes into the hasher
-    let result = hasher.finalize();     // Compute final 32-byte hash (digest)
+	// Create a new SHA-256 context
+    let mut hasher = Sha256::new();     
+	// Feed firmware bytes into the hasher
+    hasher.update(firmware);            
+	// Compute final 32-byte hash (digest)
+    let result = hasher.finalize();     
 
-    // NOTE: This uses a direct equality check which may be vulnerable
-    // to timing attacks. Consider using a constant-time comparison instead.
-    result.as_slice() == expected_hash
+    
+	// vulnerable to timing attacks 
+    // result.as_slice() == expected_hash
+	
+	// Safe against timing attacks
+	// ct_eq compares every byte, regardless of mismatch position.
+	// Always takes the same time.
+	// Returns a Choice (boolean-like), which you convert with .into().
+    result.as_slice().ct_eq(expected_hash).into()
 }
 
 /// Verify that the firmware was signed by a trusted source using ECDSA (P-256).
