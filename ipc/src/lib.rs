@@ -6,12 +6,14 @@
 //! Author  : Md Mahbubur Rahman
 //! URL     : https://m-a-h-b-u-b.github.io
 //! GitHub  : https://github.com/m-a-h-b-u-b/SecureIoTOS
-//!
-//! This module provides **inter-process communication (IPC) primitives**
-//! for SecureIoTOS. It is designed to be lightweight and no_std compatible,
-//! suitable for embedded and real-time environments.
 
+//! This module provides IPC primitives — mechanisms for 
+//! tasks (threads, processes, or lightweight tasks in SecureIoTOS) to communicate and synchronize safely:
+//! Message Queues (for passing data between tasks)
+//! Semaphores (for signaling between tasks)
+//! Event Flags (for task synchronization via event triggers)
 
+// #![no_std]: disables Rust’s standard library, ensuring compatibility with embedded systems.
 #![no_std]
 
 #[cfg(feature = "alloc")]
@@ -20,21 +22,17 @@ extern crate alloc;
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
+// UnsafeCell: allows mutable memory inside immutable structs, 
+// needed for concurrency (e.g., message queue head/tail).
 use core::cell::UnsafeCell;
+
+// AtomicBool: provides lock-free synchronization for semaphores/events
+// Ordering: defines memory ordering guarantees (Acquire, Release, etc.).
 use core::sync::atomic::{AtomicBool, Ordering};
 
-//!
-//! Supported primitives:
-//! - Message queues
-//! - Semaphores / signaling
-//! - Event flags
-//!
-//! # Notes
-//! - All primitives are **thread-safe** when used with the kernel scheduler.
-//! - Avoid dynamic allocation in low-memory targets; optionally enable `alloc` feature.
-
-
-/// Represents a fixed-size message in an IPC queue.
+// A generic fixed-size message container (N = max message size).
+// Example: IpcMessage<16> → holds up to 16 bytes.
+// length specifies how many bytes are actually used.
 #[derive(Debug, Clone, Copy)]
 pub struct IpcMessage<const N: usize> {
     pub data: [u8; N],
@@ -52,6 +50,9 @@ impl<const N: usize> IpcMessage<N> {
 
 /// Simple single-producer, single-consumer message queue.
 /// Can be used for task-to-task communication.
+/// SIZE = number of messages it can store.
+/// MSG_SIZE = max size of each message.
+/// Uses a circular buffer with head (enqueue index) and tail (dequeue index).
 pub struct MessageQueue<const SIZE: usize, const MSG_SIZE: usize> {
     buffer: [IpcMessage<MSG_SIZE>; SIZE],
     head: UnsafeCell<usize>,
