@@ -10,17 +10,27 @@
 //! Provides a single-producer, single-consumer (SPSC) message queue
 //! using `heapless::spsc::Queue`. Designed for no_std and embedded environments.
 
-
+// Queue → lock-free SPSC queue with fixed capacity.
 use heapless::spsc::Queue;
+// interrupt::free → disables interrupts temporarily for 
+// safe access (since static mut is not thread-safe).
 use cortex_m::interrupt;
 
 // Global SPSC message queue (u32, capacity 16)
+// static mut → global mutable storage (dangerous in Rust, requires unsafe).
+// Queue<u32, 16> → queue that stores up to 16 u32 messages.
+// unsafe is required because multiple contexts (main + interrupts) might access it.
 static mut MSG_QUEUE: Queue<u32, 16> = Queue::new();
 
 /// Initialize the message queue.
 ///
 /// Resets the queue to empty. Should be called at system startup
 /// before any send/receive operations.
+
+// Writing |_| means: 
+// "This closure takes one argument, but I don’t care about its name or value."
+// Using |_| because I don’t need the CriticalSection handle itself — 
+// I only need the guarantee that the closure runs with interrupts disabled.
 pub fn init_queue() {
     interrupt::free(|_| unsafe { MSG_QUEUE.reset() });
 }
