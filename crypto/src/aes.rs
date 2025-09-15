@@ -1,5 +1,5 @@
-//! SecureIoTOS Cryptography Module
-//! --------------------------------
+//! SecureIoTOS Cryptography aes Module
+//! -----------------------------------
 //! License : Dual License
 //!           - Apache 2.0 for open-source / personal use
 //!           - Commercial license required for closed-source use
@@ -10,11 +10,26 @@
 //! Provides AES-128 CBC encryption/decryption with PKCS7 padding.
 //! Recommended for secure IoT flash storage or RAM encryption.
 
+// Aes128 is a struct that implements the AES 
+// (Advanced Encryption Standard) algorithm with a 128-bit key size.
 use aes::Aes128;
+
+// BlockMode: a trait that defines a common interface for 
+// different block cipher modes (encrypt/decrypt).
+// Cbc: a specific block cipher mode called Cipher Block Chaining (CBC).
 use block_modes::{BlockMode, Cbc};
+
+// AES works on fixed-size blocks (16 bytes for AES).
+// If the plaintext length isn’t a multiple of 16, PKCS#7 adds 
+// extra bytes with values equal to the number of padding bytes.
 use block_modes::block_padding::Pkcs7;
+
+// Result is a convenient type alias for Result<T, anyhow::Error>.
+// Context is a trait that lets you attach extra context to errors (.context("message")).
 use anyhow::{Context, Result};
 
+// Creates a type alias—a shorter name for an existing, possibly long or complex type.
+// Purpose: Instead of repeatedly writing Cbc<Aes128, Pkcs7> everywhere, you can just write Aes128Cbc.
 type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 
 /// Encrypt data using AES-128 CBC with PKCS7 padding.
