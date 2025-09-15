@@ -11,7 +11,12 @@
 //! Keys are stored in RAM (protected by a Mutex) and should ideally be
 //! persisted in secure flash or a hardware security module (HSM).
 
+// RefCell is a type from Rust’s core library (a minimal, no_std version of std), 
+// used for interior mutability.
 use core::cell::RefCell;
+
+// Mutex here comes from the cortex-m crate.
+// Purpose --> Provides exclusive access to data across interrupt contexts
 use cortex_m::interrupt::Mutex;
 use rand::RngCore; // optional for random key generation
 
