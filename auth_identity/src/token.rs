@@ -1,4 +1,5 @@
-//! SecureIoTOS Authentication & Identity Module
+//! SecureIoTOS Authentication & Identity token Module
+//! --------------------------------------------------
 //! License : Dual License
 //!           - Apache 2.0 for open-source / personal use
 //!           - Commercial license required for closed-source use
@@ -10,9 +11,23 @@
 //! Device tokens are ECC signatures used for secure identification.
 //! In production, keys should be stored in secure hardware (TPM, secure element) and never exposed in RAM.
 
+// RefCell is a smart pointer type from Rust’s core library (the minimal, no-std version of std).
+// Provides interior mutability—you can mutate the data it wraps even when 
+// the RefCell itself is immutable, but only at runtime.
 use core::cell::RefCell;
+
+// From the cortex-m crate, specifically for ARM Cortex-M microcontrollers.
+// A mutex designed for bare-metal embedded systems that disables interrupts 
+// while accessing the data, ensuring critical sections are safe.
 use cortex_m::interrupt::Mutex;
+
+// These are from the p256 crate, which implements the NIST P-256 (a.k.a. secp256r1) elliptic curve:
+// SigningKey --> Holds the private key used to produce ECDSA signatures.
+// Signature --> Represents an actual ECDSA signature (the pair of integers (r, s)).
+// signature::Signer --> A trait (from the signature crate) that defines a sign() method.
 use p256::ecdsa::{SigningKey, Signature, signature::Signer};
+
+// A cryptographically secure random number generator (RNG) from the rand_core crate 
 use rand_core::OsRng;
 
 static DEVICE_SIGNING_KEY: Mutex<RefCell<Option<SigningKey>>> = Mutex::new(RefCell::new(None));
