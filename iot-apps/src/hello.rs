@@ -26,10 +26,20 @@ pub fn hello_world() {
 /// greet(Some("Alice"));
 /// greet(None);
 /// ```
+
+// name: Option<&str> – The parameter is an Option that may contain a 
+// string slice (&str) or be None.
+// Some(&str) → caller passed a name.
+// None → caller passed no name.
 pub fn greet(name: Option<&str>) {
+	// match is Rust’s powerful pattern-matching construct.
     match name {
+		// attern: Some(n) – executes when name is Some(&str), binding the inner string to n.
+		// Guard: if !n.trim().is_empty() – an extra condition that ensures the string isn’t just whitespace.
+		// Action: Logs a greeting with info!.
+		// n.trim() removes leading/trailing whitespace before printing.
         Some(n) if !n.trim().is_empty() => {
-            info!("Hello, {}! 👋 Welcome to SecureIoTOS 🚀", n.trim());
+            info!("Hello, {}! Welcome to SecureIoTOS ", n.trim());
         }
         Some(_) => {
             warn!("Received an empty name. Falling back to default greeting.");
