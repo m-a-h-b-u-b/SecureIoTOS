@@ -1,4 +1,5 @@
-﻿//! SecureIoTOS Kernel Module
+﻿//! SecureIoTOS Kernel Static Analysis Module
+//! -----------------------------------------
 //! License : Dual License
 //!           - Apache 2.0 for open-source / personal use
 //!           - Commercial license required for closed-source use
