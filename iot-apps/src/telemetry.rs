@@ -14,6 +14,11 @@ use crate::sensor;
 use serde::{Serialize, Deserialize};
 use log::{info, error};
 
+use aes_gcm::{Aes256Gcm, Key, Nonce};
+use aes_gcm::aead::{Aead, KeyInit};
+use rand::RngCore;
+use base64::{engine::general_purpose, Engine as _};
+
 /// Telemetry data structure
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TelemetryData {
@@ -55,18 +60,48 @@ pub fn collect_telemetry() -> Result<TelemetryData, &'static str> {
     })
 }
 
-/// Securely transmit telemetry data (stub for encryption + network send)
-pub fn transmit_telemetry(data: &TelemetryData) -> Result<(), &'static str> {
-    // Serialize data to JSON for transmission
-    match serde_json::to_string(data) {
-        Ok(payload) => {
-            // Placeholder: in real system, encrypt before sending
-            info!("Securely transmitting telemetry payload: {}", payload);
-            Ok(())
-        }
-        Err(_) => {
+/// Securely transmit telemetry data:
+/// 1. Serialize to JSON
+/// 2. Encrypt with AES-256-GCM
+/// 3. Base64-encode and (for demo) log the payload
+///
+/// `key_bytes` must be a 32-byte symmetric key managed securely
+pub fn transmit_telemetry(
+    data: &TelemetryData,
+    key_bytes: &[u8; 32],
+) -> Result<(), &'static str> {
+    // --- 1. Serialize ---
+    let json_payload = serde_json::to_string(data)
+        .map_err(|_| {
             error!("Telemetry serialization failed");
-            Err("Serialization error")
-        }
-    }
+            "Serialization error"
+        })?;
+
+    // --- 2. Encrypt ---
+    let key = Key::<Aes256Gcm>::from_slice(key_bytes);
+    let cipher = Aes256Gcm::new(key);
+
+    // AES-GCM requires a unique 96-bit (12-byte) nonce per message
+    let mut nonce_bytes = [0u8; 12];
+    rand::thread_rng().fill_bytes(&mut nonce_bytes);
+    let nonce = Nonce::from_slice(&nonce_bytes);
+
+    let ciphertext = cipher
+        .encrypt(nonce, json_payload.as_bytes())
+        .map_err(|_| {
+            error!("Telemetry encryption failed");
+            "Encryption error"
+        })?;
+
+    // Prepend nonce so receiver can decrypt
+    let mut message = nonce_bytes.to_vec();
+    message.extend_from_slice(&ciphertext);
+
+    // --- 3. Encode & "send" ---
+    let encoded = general_purpose::STANDARD.encode(message);
+
+    // In production: send `encoded` via HTTPS/MQTT/etc.
+    info!("Securely transmitting telemetry payload: {}", encoded);
+
+    Ok(())
 }

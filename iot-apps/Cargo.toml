@@ -5,3 +5,10 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+aes-gcm = "0.10"          # AES-GCM encryption
+aes = "0.8"               # AES block cipher (required by aes-gcm)
+rand = "0.8"              # Secure random number generation
+base64 = "0.21"           # Encode ciphertext to a string
