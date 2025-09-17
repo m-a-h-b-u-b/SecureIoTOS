@@ -34,6 +34,8 @@ pub async fn run_demo() -> Result<(), &'static str> {
     }
 
     // Step 3: Telemetry collection + secure transmission
+	// Monitor how a system behaves in real time, detect issues early, 
+	// and help developers/operators improve reliability and security.
     info!("Collecting telemetry...");
     match telemetry::collect_telemetry() {
         Ok(data) => {
