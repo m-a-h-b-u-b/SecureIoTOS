@@ -142,11 +142,21 @@ pub fn encrypt_and_send_spi<T: Spi>(spi: &mut T, plaintext: &[u8]) -> Result<(),
 /// Encrypt and send a buffer over I2C using AEAD.
 /// Packet format: nonce (12) || ciphertext
 pub fn encrypt_and_send_i2c<T: I2c>(i2c: &mut T, addr: u8, plaintext: &[u8]) -> Result<(), BusSecurityError> {
-    let key_bytes = get_session_key_clone()?;
+    
+	// retrieves a session key (likely 256-bit for ChaCha20-Poly1305).
+	// The ? operator propagates any error
+	let key_bytes = get_session_key_clone()?;
+	
+	// wraps the raw bytes into the AEAD key type.
     let key = Key::from_slice(&key_bytes);
+	
+	// Uses the ChaCha20-Poly1305 -- uthenticated encryption algorithm.
+	// Provides both confidentiality (encryption) and integrity (authentication tag).
     let aead = ChaCha20Poly1305::new(key);
 
+	// Creates a NONCE_LEN array (commonly 12 bytes).
     let mut nonce_bytes = [0u8; NONCE_LEN];
+	// OsRng pulls secure random bytes from the operating system.
     OsRng.fill_bytes(&mut nonce_bytes);
     let nonce = Nonce::from_slice(&nonce_bytes);
 
